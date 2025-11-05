@@ -1,73 +1,85 @@
+// src/components/LightRays.jsx
 import { useFrame, useThree } from '@react-three/fiber'
-import { useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import * as THREE from 'three'
 
 const LightRays = ({
-                       raysOrigin = 'top-center-offset',
-                       raysColor = '#0ea5e9',
-                       raysSpeed = 0.8,
-                       lightSpread = 0.8,
-                       rayLength = 1.2,
-                       followMouse = true,
-                       mouseInfluence = 0.03,
-                       noiseAmount = 0.1,
-                       distortion = 0.005
+                       count = 50,
+                       color = '#415A77',
+                       speed = 0.5,
+                       radius = 3
                    }) => {
     const meshRef = useRef()
     const { mouse, viewport } = useThree()
 
-    // Create gradient texture for the light rays
-    const createGradientTexture = () => {
-        const canvas = document.createElement('canvas')
-        canvas.width = 256
-        canvas.height = 256
-        const context = canvas.getContext('2d')
+    // Create rays geometry
+    const geometry = useMemo(() => {
+        const geometry = new THREE.BufferGeometry()
+        const positions = new Float32Array(count * 3 * 2)
+        const colors = new Float32Array(count * 3 * 2)
 
-        const gradient = context.createLinearGradient(0, 0, 0, 256)
-        gradient.addColorStop(0, raysColor)
-        gradient.addColorStop(1, 'transparent')
+        for (let i = 0; i < count; i++) {
+            const i6 = i * 6
+            const angle = (i / count) * Math.PI * 2
+            const x = Math.cos(angle) * radius
+            const y = Math.sin(angle) * radius
 
-        context.fillStyle = gradient
-        context.fillRect(0, 0, 256, 256)
+            // Start position (inner circle)
+            positions[i6] = x * 0.3
+            positions[i6 + 1] = y * 0.3
+            positions[i6 + 2] = 0
 
-        return new THREE.CanvasTexture(canvas)
-    }
+            // End position (outer circle)
+            positions[i6 + 3] = x
+            positions[i6 + 4] = y
+            positions[i6 + 5] = 0
+
+            // Colors
+            const colorObj = new THREE.Color(color)
+            colors[i6] = colorObj.r
+            colors[i6 + 1] = colorObj.g
+            colors[i6 + 2] = colorObj.b
+            colors[i6 + 3] = colorObj.r * 0.3
+            colors[i6 + 4] = colorObj.g * 0.3
+            colors[i6 + 5] = colorObj.b * 0.3
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+        return geometry
+    }, [count, color, radius])
 
     useFrame((state) => {
         if (!meshRef.current) return
 
-        const time = state.clock.getElapsedTime() * raysSpeed
+        const time = state.clock.getElapsedTime()
 
-        // Mouse following effect
-        if (followMouse) {
-            meshRef.current.position.x = THREE.MathUtils.lerp(
-                meshRef.current.position.x,
-                mouse.x * viewport.width * mouseInfluence,
-                0.1
-            )
-            meshRef.current.position.y = THREE.MathUtils.lerp(
-                meshRef.current.position.y,
-                mouse.y * viewport.height * mouseInfluence,
-                0.1
-            )
-        }
+        // Gentle rotation and pulse
+        meshRef.current.rotation.z = time * speed * 0.1
+        meshRef.current.scale.setScalar(1 + Math.sin(time * speed) * 0.05)
 
-        // Subtle animation
-        meshRef.current.rotation.z = Math.sin(time * 0.5) * distortion
-        meshRef.current.material.opacity = 0.6 + Math.sin(time * 0.8) * 0.2
+        // Subtle mouse follow
+        meshRef.current.position.x = THREE.MathUtils.lerp(
+            meshRef.current.position.x,
+            mouse.x * viewport.width * 0.1,
+            0.1
+        )
+        meshRef.current.position.y = THREE.MathUtils.lerp(
+            meshRef.current.position.y,
+            mouse.y * viewport.height * 0.1,
+            0.1
+        )
     })
 
     return (
-        <mesh ref={meshRef} position={[0, 0, -10]} scale={[lightSpread * 4, rayLength * 3, 1]}>
-            <planeGeometry args={[1, 1]} />
-            <meshBasicMaterial
+        <lineSegments ref={meshRef} geometry={geometry}>
+            <lineBasicMaterial
+                vertexColors
                 transparent
-                opacity={0.7}
-                map={createGradientTexture()}
+                opacity={0.6}
                 blending={THREE.AdditiveBlending}
-                depthWrite={false}
             />
-        </mesh>
+        </lineSegments>
     )
 }
 

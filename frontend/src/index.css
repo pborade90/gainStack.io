@@ -1,27 +1,63 @@
+/* src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
     body {
-        @apply bg-primary text-light min-h-screen;
+        @apply bg-primary text-light min-h-screen antialiased;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-secondary;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-tertiary rounded-full;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-quaternary;
     }
 }
 
 @layer components {
     .btn-primary {
-        @apply bg-tertiary hover:bg-quaternary text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+        @apply bg-gradient-to-r from-tertiary to-quaternary text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed;
     }
 
     .btn-secondary {
-        @apply bg-secondary hover:bg-tertiary text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+        @apply bg-secondary text-light font-semibold py-3 px-6 rounded-xl border border-quaternary/20 transition-all duration-200 hover:scale-105 hover:bg-tertiary/10 disabled:opacity-50 disabled:cursor-not-allowed;
     }
 
     .input-field {
-        @apply w-full px-3 py-2 bg-secondary border border-quaternary rounded-lg text-light placeholder-quaternary focus:outline-none focus:ring-2 focus:ring-tertiary;
+        @apply w-full px-4 py-3 bg-secondary border border-quaternary/30 rounded-xl text-light placeholder-quaternary/50 focus:outline-none focus:ring-2 focus:ring-tertiary focus:border-transparent transition-all duration-200;
     }
 
     .card {
-        @apply bg-secondary rounded-xl shadow-lg border border-quaternary/20 p-6;
+        @apply bg-secondary/50 backdrop-blur-sm rounded-2xl shadow-xl border border-quaternary/10 p-6 hover:shadow-2xl transition-all duration-300;
+    }
+
+    .glass {
+        @apply bg-white/10 backdrop-blur-md border border-white/20;
+    }
+}
+
+@layer utilities {
+    .text-gradient {
+        @apply bg-gradient-to-r from-tertiary to-quaternary bg-clip-text text-transparent;
+    }
+
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
     }
 }
