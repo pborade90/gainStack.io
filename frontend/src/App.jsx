@@ -1,7 +1,8 @@
+// src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useAuthContext } from './contexts/AuthContext.jsx'  // Fixed import path
-import { WorkoutsProvider } from './contexts/WorkoutContext.jsx'
-import { RestTimerProvider } from './contexts/RestTimerContext.jsx'
+import { useAuthContext } from './contexts/AuthContext'
+import { WorkoutsProvider } from './contexts/WorkoutContext'
+import { RestTimerProvider } from './contexts/RestTimerContext'
 
 // Pages
 import Landing from './pages/Landing'
@@ -21,7 +22,7 @@ function App() {
         <BrowserRouter>
             <WorkoutsProvider>
                 <RestTimerProvider>
-                    <div className="min-h-screen bg-primary">
+                    <div className="min-h-screen bg-gradient-to-br from-primary to-secondary">
                         <Navbar />
                         <main className="pb-20">
                             <Routes>
